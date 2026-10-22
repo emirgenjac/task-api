@@ -1,6 +1,5 @@
 const express = require("express");
 
-const app = express();
 const PORT = 3000;
 
 const tasks = [
@@ -8,6 +7,10 @@ const tasks = [
   { id: 2, title: "Build the task API", done: false },
   { id: 3, title: "Publish to GitHub", done: false },
 ];
+let nextId = 4;
+
+const app = express();
+app.use(express.json());
 
 function findTask(id) {
   return tasks.find((task) => task.id === id);
@@ -38,6 +41,19 @@ app.get("/tasks/:id", (req, res) => {
   }
 
   res.json(task);
+});
+
+app.post("/tasks", (req, res) => {
+  const title = req.body && req.body.title;
+
+  if (typeof title !== "string" || title.trim() === "") {
+    return res.status(400).json({ error: "title is required" });
+  }
+
+  const task = { id: nextId, title: title.trim(), done: false };
+  nextId += 1;
+  tasks.push(task);
+  res.status(201).json(task);
 });
 
 app.listen(PORT, () => {
