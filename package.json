@@ -1,0 +1,13 @@
+{
+  "name": "task-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "In-memory task API for FlyRank BE-01",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
