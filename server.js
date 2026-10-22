@@ -1,4 +1,6 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const openapi = require("./openapi.json");
 
 const PORT = 3000;
 
@@ -105,6 +107,8 @@ app.delete("/tasks/:id", (req, res) => {
   tasks.splice(index, 1);
   res.status(204).end();
 });
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
