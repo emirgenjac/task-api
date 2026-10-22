@@ -56,6 +56,63 @@ app.post("/tasks", (req, res) => {
   res.status(201).json(task);
 });
 
+app.put("/tasks/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const task = findTask(id);
+
+  if (!task) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
+
+  const body = req.body;
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return res.status(400).json({ error: "request body is required" });
+  }
+
+  const hasTitle = Object.prototype.hasOwnProperty.call(body, "title");
+  const hasDone = Object.prototype.hasOwnProperty.call(body, "done");
+
+  if (!hasTitle && !hasDone) {
+    return res.status(400).json({ error: "title or done is required" });
+  }
+
+  if (hasTitle && (typeof body.title !== "string" || body.title.trim() === "")) {
+    return res.status(400).json({ error: "title is required" });
+  }
+
+  if (hasDone && typeof body.done !== "boolean") {
+    return res.status(400).json({ error: "done must be true or false" });
+  }
+
+  if (hasTitle) {
+    task.title = body.title.trim();
+  }
+  if (hasDone) {
+    task.done = body.done;
+  }
+
+  res.json(task);
+});
+
+app.delete("/tasks/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const index = tasks.findIndex((task) => task.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
+
+  tasks.splice(index, 1);
+  res.status(204).end();
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({ error: "request body must be JSON" });
+  }
+  next(err);
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
