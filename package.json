@@ -5,11 +5,12 @@
   "description": "Task API stored in SQLite",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node --env-file=.env server.js"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
     "express": "^4.21.2",
+    "pg": "^8.23.1",
     "swagger-ui-express": "^5.0.1"
   }
 }

@@ -1,7 +1,7 @@
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const openapi = require("./openapi.json");
-const { getAllTasks, getTask, createTask, updateTask, deleteTask } = require("./db");
+const { init, getAllTasks, getTask, createTask, updateTask, deleteTask } = require("./db");
 
 const PORT = 3000;
 
@@ -112,6 +112,13 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+init()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server listening on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
