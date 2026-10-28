@@ -66,13 +66,26 @@ function publicInfo(req, res) {
   res.json({ message: "Welcome stranger! This info is public." });
 }
 
-function protectedProfile(req, res) {
-  const token = bearerToken(req.headers.authorization);
-  if (!token) {
-    return res.status(401).json({ error: "Access token required" });
-  }
+async function protectedProfile(req, res, next) {
+  try {
+    const token = bearerToken(req.headers.authorization);
+    if (!token) {
+      return res.status(401).json({ error: "Access token required" });
+    }
 
-  res.json({ message: "Token received." });
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    res.json({
+      id: data.user.id,
+      email: data.user.email,
+      created_at: data.user.created_at,
+    });
+  } catch (err) {
+    next(err);
+  }
 }
 
 module.exports = { signup, login, publicInfo, protectedProfile };
