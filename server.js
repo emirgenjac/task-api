@@ -47,72 +47,80 @@ app.get("/tasks/:id", async (req, res, next) => {
   }
 });
 
-app.post("/tasks", (req, res) => {
-  const title = req.body && req.body.title;
-
-  if (typeof title !== "string" || title.trim() === "") {
-    return res.status(400).json({ error: "title is required" });
-  }
-
-  const task = createTask(title.trim());
-  res.status(201).json(task);
-});
-
-app.put("/tasks/:id", async (req, res, next) => {
+app.post("/tasks", async (req, res, next) => {
   try {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
-  }
+    const title = req.body && req.body.title;
 
-  const existing = await getTask(id);
+    if (typeof title !== "string" || title.trim() === "") {
+      return res.status(400).json({ error: "title is required" });
+    }
 
-  if (!existing) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
-  }
-
-  const body = req.body;
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return res.status(400).json({ error: "request body is required" });
-  }
-
-  const hasTitle = Object.prototype.hasOwnProperty.call(body, "title");
-  const hasDone = Object.prototype.hasOwnProperty.call(body, "done");
-
-  if (!hasTitle && !hasDone) {
-    return res.status(400).json({ error: "title or done is required" });
-  }
-
-  if (hasTitle && (typeof body.title !== "string" || body.title.trim() === "")) {
-    return res.status(400).json({ error: "title is required" });
-  }
-
-  if (hasDone && typeof body.done !== "boolean") {
-    return res.status(400).json({ error: "done must be true or false" });
-  }
-
-  const title = hasTitle ? body.title.trim() : existing.title;
-  const done = hasDone ? body.done : existing.done;
-  const task = updateTask(id, title, done);
-  res.json(task);
+    const task = await createTask(title.trim());
+    res.status(201).json(task);
   } catch (err) {
     next(err);
   }
 });
 
-app.delete("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+app.put("/tasks/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    }
+
+    const existing = await getTask(id);
+
+    if (!existing) {
+      return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    }
+
+    const body = req.body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return res.status(400).json({ error: "request body is required" });
+    }
+
+    const hasTitle = Object.prototype.hasOwnProperty.call(body, "title");
+    const hasDone = Object.prototype.hasOwnProperty.call(body, "done");
+
+    if (!hasTitle && !hasDone) {
+      return res.status(400).json({ error: "title or done is required" });
+    }
+
+    if (hasTitle && (typeof body.title !== "string" || body.title.trim() === "")) {
+      return res.status(400).json({ error: "title is required" });
+    }
+
+    if (hasDone && typeof body.done !== "boolean") {
+      return res.status(400).json({ error: "done must be true or false" });
+    }
+
+    const title = hasTitle ? body.title.trim() : existing.title;
+    const done = hasDone ? body.done : existing.done;
+    const task = await updateTask(id, title, done);
+    res.json(task);
+  } catch (err) {
+    next(err);
   }
+});
 
-  const removed = deleteTask(id);
+app.delete("/tasks/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    }
 
-  if (!removed) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    const removed = await deleteTask(id);
+
+    if (!removed) {
+      return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    }
+
+    res.status(204).end();
+  } catch (err) {
+    next(err);
   }
-
-  res.status(204).end();
 });
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
