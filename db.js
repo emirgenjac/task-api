@@ -48,4 +48,9 @@ function getTask(id) {
   return toTask(db.prepare("SELECT * FROM tasks WHERE id = ?").get(id));
 }
 
-module.exports = { getAllTasks, getTask };
+function createTask(title) {
+  const info = db.prepare("INSERT INTO tasks (title, done) VALUES (?, ?)").run(title, 0);
+  return getTask(Number(info.lastInsertRowid));
+}
+
+module.exports = { getAllTasks, getTask, createTask };
