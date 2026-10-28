@@ -53,3 +53,15 @@ Keep-Alive: timeout=5
 ## Swagger UI
 
 ![Swagger UI listing every endpoint](swagger.png)
+
+## SQL I ran
+
+I ran this against `tasks.db` while the server was still up:
+
+```sql
+SELECT COUNT(*) FROM tasks;
+```
+
+It returned 4. That was the three example tasks plus "Walk the dog".
+
+I then ran `UPDATE tasks SET done = 1;`. `GET /tasks` showed every task as done. I did not restart the server. Then `DELETE FROM tasks WHERE done = 1;` cleared the table, and `GET /tasks` returned `[]`. After a restart the table was empty, so the three example tasks were inserted again.
