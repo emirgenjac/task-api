@@ -28,4 +28,24 @@ function seedIfEmpty() {
 
 seedIfEmpty();
 
-module.exports = { db };
+function toTask(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    title: row.title,
+    done: row.done === 1,
+  };
+}
+
+function getAllTasks() {
+  return db.prepare("SELECT * FROM tasks").all().map(toTask);
+}
+
+function getTask(id) {
+  return toTask(db.prepare("SELECT * FROM tasks WHERE id = ?").get(id));
+}
+
+module.exports = { getAllTasks, getTask };
