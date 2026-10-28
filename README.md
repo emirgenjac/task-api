@@ -10,6 +10,16 @@ The file is `tasks.db`, next to `server.js`. It is listed in `.gitignore`, so a 
 
 Those three inserts run in one transaction. If the process stops halfway, the table does not keep a partial seed. The next start still sees an empty table and inserts all three.
 
+## Postgres server
+
+The database server is Postgres, running in Docker. It is not installed on the machine. Start it with:
+
+```bash
+docker run --name taskdb -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=tasks -p 5432:5432 -v taskdata:/var/lib/postgresql/data -d postgres:16
+```
+
+The image is `postgres:16`. The volume `taskdata` keeps the rows after the container stops. `docker ps` shows it running. `docker exec -it taskdb psql -U postgres -d tasks` opens the SQL prompt.
+
 ## Run
 
 One command after install:
