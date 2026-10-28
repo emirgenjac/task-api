@@ -20,23 +20,31 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.get("/tasks", (req, res) => {
-  res.json(getAllTasks());
+app.get("/tasks", async (req, res, next) => {
+  try {
+    res.json(await getAllTasks());
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id)) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+app.get("/tasks/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    }
+
+    const task = await getTask(id);
+
+    if (!task) {
+      return res.status(404).json({ error: `Task ${req.params.id} not found` });
+    }
+
+    res.json(task);
+  } catch (err) {
+    next(err);
   }
-
-  const task = getTask(id);
-
-  if (!task) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
-  }
-
-  res.json(task);
 });
 
 app.post("/tasks", (req, res) => {
@@ -50,13 +58,14 @@ app.post("/tasks", (req, res) => {
   res.status(201).json(task);
 });
 
-app.put("/tasks/:id", (req, res) => {
+app.put("/tasks/:id", async (req, res, next) => {
+  try {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) {
     return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
 
-  const existing = getTask(id);
+  const existing = await getTask(id);
 
   if (!existing) {
     return res.status(404).json({ error: `Task ${req.params.id} not found` });
@@ -86,6 +95,9 @@ app.put("/tasks/:id", (req, res) => {
   const done = hasDone ? body.done : existing.done;
   const task = updateTask(id, title, done);
   res.json(task);
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.delete("/tasks/:id", (req, res) => {
@@ -109,7 +121,8 @@ app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
     return res.status(400).json({ error: "request body must be JSON" });
   }
-  next(err);
+  console.error(err);
+  res.status(500).json({ error: "something went wrong" });
 });
 
 init()

@@ -95,17 +95,23 @@ function toTask(row) {
   };
 }
 
-function getAllTasks() {
-  return db.prepare("SELECT * FROM tasks").all().map(toTask);
+function readSqliteTask(id) {
+  return toTask(db.prepare("SELECT * FROM tasks WHERE id = ?").get(id));
 }
 
-function getTask(id) {
-  return toTask(db.prepare("SELECT * FROM tasks WHERE id = ?").get(id));
+async function getAllTasks() {
+  const result = await pool.query("SELECT * FROM tasks");
+  return result.rows;
+}
+
+async function getTask(id) {
+  const result = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
+  return result.rows[0] || null;
 }
 
 function createTask(title) {
   const info = db.prepare("INSERT INTO tasks (title, done) VALUES (?, ?)").run(title, 0);
-  return getTask(Number(info.lastInsertRowid));
+  return readSqliteTask(Number(info.lastInsertRowid));
 }
 
 function updateTask(id, title, done) {
@@ -117,7 +123,7 @@ function updateTask(id, title, done) {
     return null;
   }
 
-  return getTask(id);
+  return readSqliteTask(id);
 }
 
 function deleteTask(id) {
