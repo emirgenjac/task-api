@@ -19,6 +19,8 @@ npm install
 npm start
 ```
 
+`.npmrc` turns off install scripts. `better-sqlite3` already includes a Windows build, so npm does not need to compile it.
+
 The server listens at [http://localhost:3000](http://localhost:3000).
 
 Swagger UI is at [http://localhost:3000/docs](http://localhost:3000/docs).
