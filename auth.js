@@ -66,7 +66,7 @@ function publicInfo(req, res) {
   res.json({ message: "Welcome stranger! This info is public." });
 }
 
-async function protectedProfile(req, res, next) {
+async function requireUser(req, res, next) {
   try {
     const token = bearerToken(req.headers.authorization);
     if (!token) {
@@ -78,14 +78,35 @@ async function protectedProfile(req, res, next) {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    res.json({
-      id: data.user.id,
-      email: data.user.email,
-      created_at: data.user.created_at,
-    });
+    req.user = data.user;
+    next();
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { signup, login, publicInfo, protectedProfile };
+function profile(req, res) {
+  res.json({
+    id: req.user.id,
+    email: req.user.email,
+    created_at: req.user.created_at,
+  });
+}
+
+function dashboard(req, res) {
+  res.json({ message: "Welcome back." });
+}
+
+async function logout(req, res, next) {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { signup, login, publicInfo, requireUser, profile, dashboard, logout };
