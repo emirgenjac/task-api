@@ -3,7 +3,7 @@
   "info": {
     "title": "Task API",
     "version": "1.0",
-    "description": "In-memory to-do API. Data disappears when the server restarts."
+    "description": "To-do API. Tasks are stored in SQLite and stay after a restart."
   },
   "servers": [{ "url": "http://localhost:3000" }],
   "paths": {
@@ -34,7 +34,7 @@
         "summary": "List every task",
         "responses": {
           "200": {
-            "description": "The full in-memory list",
+            "description": "The full list",
             "content": {
               "application/json": {
                 "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } }
