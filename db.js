@@ -2,6 +2,10 @@ const { Pool } = require("pg");
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+pool.on("error", (err) => {
+  console.error("Postgres client error", err.message);
+});
+
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
