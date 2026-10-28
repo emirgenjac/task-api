@@ -3,7 +3,7 @@ const swaggerUi = require("swagger-ui-express");
 const openapi = require("./openapi.json");
 const { init, getAllTasks, getTask, createTask, updateTask, deleteTask } = require("./db");
 const { connectSupabase } = require("./supabase");
-const { signup, login } = require("./auth");
+const { signup, login, publicInfo, protectedProfile } = require("./auth");
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -24,6 +24,8 @@ app.get("/health", (req, res) => {
 
 app.post("/auth/signup", signup);
 app.post("/auth/login", login);
+app.get("/public/info", publicInfo);
+app.get("/protected/profile", protectedProfile);
 
 app.get("/tasks", async (req, res, next) => {
   try {

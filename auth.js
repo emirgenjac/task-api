@@ -54,4 +54,25 @@ async function login(req, res, next) {
   }
 }
 
-module.exports = { signup, login };
+function bearerToken(header) {
+  if (typeof header !== "string") {
+    return null;
+  }
+  const match = header.match(/^Bearer\s+(\S+)\s*$/i);
+  return match ? match[1] : null;
+}
+
+function publicInfo(req, res) {
+  res.json({ message: "Welcome stranger! This info is public." });
+}
+
+function protectedProfile(req, res) {
+  const token = bearerToken(req.headers.authorization);
+  if (!token) {
+    return res.status(401).json({ error: "Access token required" });
+  }
+
+  res.json({ message: "Token received." });
+}
+
+module.exports = { signup, login, publicInfo, protectedProfile };
