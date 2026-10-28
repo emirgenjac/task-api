@@ -3,7 +3,7 @@
   "info": {
     "title": "Task API",
     "version": "1.0",
-    "description": "To-do API. Tasks are stored in Postgres and stay after a restart."
+    "description": "To-do API with Supabase login. Tasks stay in Postgres. Protected routes require a bearer token."
   },
   "servers": [{ "url": "http://localhost:3000" }],
   "paths": {
@@ -25,6 +25,99 @@
           "200": {
             "description": "Server is up",
             "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "summary": "Create an account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Credentials" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "The created user" },
+          "400": {
+            "description": "Email or password is missing, or Supabase rejected the signup",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Log in and receive a token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Credentials" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access token and refresh token",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Session" } } }
+          },
+          "400": {
+            "description": "Email or password is missing",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          },
+          "401": {
+            "description": "Supabase rejected the credentials",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "End the session",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "204": { "description": "Logged out. The body is empty." },
+          "401": {
+            "description": "The token is missing or invalid",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/public/info": {
+      "get": {
+        "summary": "Read public info",
+        "responses": {
+          "200": { "description": "Anyone can read this" }
+        }
+      }
+    },
+    "/protected/profile": {
+      "get": {
+        "summary": "Read the logged-in user's profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Id, email, and the date the account was created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Profile" } } }
+          },
+          "401": {
+            "description": "The token is missing or invalid",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+          }
+        }
+      }
+    },
+    "/protected/dashboard": {
+      "get": {
+        "summary": "A second route behind the same guard",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "The caller is logged in" },
+          "401": {
+            "description": "The token is missing or invalid",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
           }
         }
       }
@@ -136,6 +229,13 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "parameters": {
       "TaskId": {
         "name": "id",
@@ -168,6 +268,29 @@
       "Error": {
         "type": "object",
         "properties": { "error": { "type": "string" } }
+      },
+      "Credentials": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "refresh_token": { "type": "string" }
+        }
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "created_at": { "type": "string" }
+        }
       }
     }
   }
