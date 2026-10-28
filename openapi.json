@@ -3,7 +3,7 @@
   "info": {
     "title": "Task API",
     "version": "1.0",
-    "description": "To-do API. Tasks are stored in SQLite and stay after a restart."
+    "description": "To-do API. Tasks are stored in Postgres and stay after a restart."
   },
   "servers": [{ "url": "http://localhost:3000" }],
   "paths": {
