@@ -2,8 +2,9 @@ const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const openapi = require("./openapi.json");
 const { init, getAllTasks, getTask, createTask, updateTask, deleteTask } = require("./db");
+const { connectSupabase } = require("./supabase");
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 const app = express();
 app.use(express.json());
@@ -134,8 +135,10 @@ app.use((err, req, res, next) => {
 });
 
 init()
+  .then(() => connectSupabase())
   .then(() => {
     app.listen(PORT, () => {
+      console.log("Server running and connected to Supabase");
       console.log(`Server listening on http://localhost:${PORT}`);
     });
   })
