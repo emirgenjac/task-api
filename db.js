@@ -53,4 +53,21 @@ function createTask(title) {
   return getTask(Number(info.lastInsertRowid));
 }
 
-module.exports = { getAllTasks, getTask, createTask };
+function updateTask(id, title, done) {
+  const info = db
+    .prepare("UPDATE tasks SET title = ?, done = ? WHERE id = ?")
+    .run(title, done ? 1 : 0, id);
+
+  if (info.changes === 0) {
+    return null;
+  }
+
+  return getTask(id);
+}
+
+function deleteTask(id) {
+  const info = db.prepare("DELETE FROM tasks WHERE id = ?").run(id);
+  return info.changes > 0;
+}
+
+module.exports = { getAllTasks, getTask, createTask, updateTask, deleteTask };

@@ -1,22 +1,12 @@
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const openapi = require("./openapi.json");
-const { getAllTasks, getTask, createTask } = require("./db");
+const { getAllTasks, getTask, createTask, updateTask, deleteTask } = require("./db");
 
 const PORT = 3000;
 
-const tasks = [
-  { id: 1, title: "Learn Express", done: false },
-  { id: 2, title: "Build the task API", done: false },
-  { id: 3, title: "Publish to GitHub", done: false },
-];
-
 const app = express();
 app.use(express.json());
-
-function findTask(id) {
-  return tasks.find((task) => task.id === id);
-}
 
 app.get("/", (req, res) => {
   res.json({
@@ -62,9 +52,13 @@ app.post("/tasks", (req, res) => {
 
 app.put("/tasks/:id", (req, res) => {
   const id = Number(req.params.id);
-  const task = findTask(id);
+  if (!Number.isFinite(id)) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
 
-  if (!task) {
+  const existing = getTask(id);
+
+  if (!existing) {
     return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
 
@@ -88,25 +82,24 @@ app.put("/tasks/:id", (req, res) => {
     return res.status(400).json({ error: "done must be true or false" });
   }
 
-  if (hasTitle) {
-    task.title = body.title.trim();
-  }
-  if (hasDone) {
-    task.done = body.done;
-  }
-
+  const title = hasTitle ? body.title.trim() : existing.title;
+  const done = hasDone ? body.done : existing.done;
+  const task = updateTask(id, title, done);
   res.json(task);
 });
 
 app.delete("/tasks/:id", (req, res) => {
   const id = Number(req.params.id);
-  const index = tasks.findIndex((task) => task.id === id);
-
-  if (index === -1) {
+  if (!Number.isFinite(id)) {
     return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
 
-  tasks.splice(index, 1);
+  const removed = deleteTask(id);
+
+  if (!removed) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
+
   res.status(204).end();
 });
 
